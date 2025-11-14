@@ -19,10 +19,10 @@
 #
 ###############################################################################
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 ARG BUILD_PACKAGES="build-essential cmake gfortran python3-dev linux-libc-dev" \
-    ECCODES_VER=2.36.0
+    ECCODES_VER=2.44.0
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     TZ="Etc/UTC" \
