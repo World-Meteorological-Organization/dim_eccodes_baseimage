@@ -31,13 +31,14 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 
 WORKDIR /tmp/eccodes
 
+RUN apt-get update && apt-get upgrade -y
+
 # compile eccodes binaries from source, install python-eccodes-modules, add cmd line editors
 RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until \
-    && apt-get update -y \
     && apt-get install -y ${BUILD_PACKAGES} python3 python3-pip curl \
     && curl https://confluence.ecmwf.int/download/attachments/45757960/eccodes-${ECCODES_VER}-Source.tar.gz --output eccodes-${ECCODES_VER}-Source.tar.gz \
     && tar xzf eccodes-${ECCODES_VER}-Source.tar.gz \
-    && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=${ECCODES_DIR} -DENABLE_AEC=OFF ../eccodes-${ECCODES_VER}-Source && make && ctest && make install \
+    && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=${ECCODES_DIR} -DENABLE_FORTRAN=OFF -DENABLE_JPG=OFF -DENABLE_AEC=OFF ../eccodes-${ECCODES_VER}-Source && make && ctest && make install \
     && cd / && rm -rf /tmp/eccodes \
     && apt-get install -y vim emacs nano \
     && apt-get remove --purge -y ${BUILD_PACKAGES} \
