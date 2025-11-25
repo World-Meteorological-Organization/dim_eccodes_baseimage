@@ -21,17 +21,23 @@
 
 FROM ubuntu:noble
 
-# Install dependencies and build tools
-RUN apt-get update && apt-get install -y python3 python3-pip python3-venv curl vim emacs nano
+# Install dependencies and editors, then clean apt cache
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-venv \
+        curl vim nano && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Create a Python virtual environment
 RUN python3 -m venv /venv
 
-# Add the virtual environment to the PATH
+# Add virtual environment to PATH
 ENV PATH="/venv/bin:$PATH"
 
-# Install and verify eccodes inside the virtual environment
-RUN pip3 install eccodes==2.44.0 && python3 -m eccodes selfcheck
+# Upgrade pip and install eccodes without cache
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir eccodes==2.44.0 && \
+    python3 -m eccodes selfcheck
 
 # Create symbolic links for eccodes binaries
 RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
