@@ -21,31 +21,19 @@
 
 FROM ubuntu:noble
 
-ARG BUILD_PACKAGES="build-essential cmake gfortran python3-dev linux-libc-dev" \
-    ECCODES_VER=2.44.0
+# Install dependencies and build tools
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv curl vim emacs nano
 
-ENV DEBIAN_FRONTEND="noninteractive" \
-    TZ="Etc/UTC" \
-    ECCODES_DIR=/opt/eccodes \
-    PATH="$PATH:/opt/eccodes/bin"
+# Create a Python virtual environment
+RUN python3 -m venv /venv
 
-WORKDIR /tmp/eccodes
+# Add the virtual environment to the PATH
+ENV PATH="/venv/bin:$PATH"
 
-RUN apt-get update && apt-get upgrade -y
+# Install and verify eccodes inside the virtual environment
+RUN pip3 install eccodes==2.44.0 && python3 -m eccodes selfcheck
 
-# compile eccodes binaries from source, install python-eccodes-modules, add cmd line editors
-RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until \
-    && apt-get install -y ${BUILD_PACKAGES} python3 python3-pip curl \
-    && curl https://confluence.ecmwf.int/download/attachments/45757960/eccodes-${ECCODES_VER}-Source.tar.gz --output eccodes-${ECCODES_VER}-Source.tar.gz \
-    && tar xzf eccodes-${ECCODES_VER}-Source.tar.gz \
-    && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=${ECCODES_DIR} -DENABLE_FORTRAN=OFF -DENABLE_JPG=OFF -DENABLE_AEC=OFF ../eccodes-${ECCODES_VER}-Source && make && ctest && make install \
-    && cd / && rm -rf /tmp/eccodes \
-    && apt-get install -y vim emacs nano \
-    && apt-get remove --purge -y ${BUILD_PACKAGES} \
-    && apt autoremove -y  \
-    && apt-get -q clean \
-    && rm -rf /var/lib/apt/lists/*
+# Create symbolic links for eccodes binaries
+RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
 
-WORKDIR /root
-# Clean up
-RUN rm -rf /tmp/eccodes
+CMD ["/bin/bash"]
