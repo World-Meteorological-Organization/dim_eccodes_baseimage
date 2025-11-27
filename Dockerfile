@@ -21,6 +21,8 @@
 
 FROM ubuntu:noble
 
+ARG ECCODES_VER=2.44.0
+
 # Install dependencies and editors, then clean apt cache
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -32,14 +34,22 @@ RUN apt-get update && \
 RUN python3 -m venv /venv
 
 # Add virtual environment to PATH
-ENV PATH="/venv/bin:$PATH"
+ENV PATH="/venv/bin:$PATH" \
+    ECCODES_DEFINITIONS_PATH="/venv/share/eccodes/definitions"
 
 # Upgrade pip and install eccodes without cache
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir eccodes==2.44.0 && \
+    pip install --no-cache-dir eccodes==${ECCODES_VER} && \
     python3 -m eccodes selfcheck
 
 # Create symbolic links for eccodes binaries
 RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
+
+# get definitions and move to correct location, then clean up
+RUN cd /tmp && curl -L -o eccodes.tar.gz https://github.com/ecmwf/eccodes/archive/refs/tags/${ECCODES_VER}.tar.gz && \
+    tar -xzf eccodes.tar.gz && \
+    mkdir -p /venv/share/eccodes && \
+    mv eccodes-${ECCODES_VER}/definitions /venv/share/eccodes/ && \
+    rm -rf /tmp/eccodes*
 
 CMD ["/bin/bash"]
