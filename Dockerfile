@@ -30,12 +30,12 @@ RUN apt-get update && \
         curl vim nano && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-# Create a Python virtual environment
-RUN python3 -m venv /venv
+# Create a Python virtual environment with access to system site packages
+RUN python3 -m venv /venv --system-site-packages
 
 # Add virtual environment to PATH
 ENV PATH="/venv/bin:$PATH" \
-    ECCODES_DEFINITIONS_PATH="/venv/share/eccodes/definitions"
+    ECCODES_DEFINITION_PATH="/venv/share/eccodes/definitions"
 
 # Upgrade pip and install eccodes without cache
 RUN pip install --no-cache-dir --upgrade pip && \
