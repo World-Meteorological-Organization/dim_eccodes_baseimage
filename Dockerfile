@@ -23,11 +23,18 @@ FROM ubuntu:noble
 
 ARG ECCODES_VER=2.44.0
 
-# Install dependencies and editors, then clean apt cache
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-venv \
         curl vim nano && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Create a Python virtual environment with access to system site packages
