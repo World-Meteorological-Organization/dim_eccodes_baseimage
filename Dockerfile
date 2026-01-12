@@ -25,7 +25,7 @@ ARG ECCODES_VER=2.44.0
 
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
-    apt-get upgrade -y && \
+    apt-get upgrade -y --fix-missing && \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-venv \
         curl vim nano && \
