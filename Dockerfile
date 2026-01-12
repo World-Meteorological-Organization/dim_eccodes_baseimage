@@ -19,32 +19,37 @@
 #
 ###############################################################################
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
-ARG BUILD_PACKAGES="build-essential cmake gfortran python3-dev linux-libc-dev" \
-    ECCODES_VER=2.36.0
+ARG ECCODES_VER=2.44.0
 
-ENV DEBIAN_FRONTEND="noninteractive" \
-    TZ="Etc/UTC" \
-    ECCODES_DIR=/opt/eccodes \
-    PATH="$PATH:/opt/eccodes/bin"
+# Install dependencies and editors, then clean apt cache
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-venv \
+        curl vim nano && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-WORKDIR /tmp/eccodes
+# Create a Python virtual environment with access to system site packages
+RUN python3 -m venv /venv --system-site-packages
 
-# compile eccodes binaries from source, install python-eccodes-modules, add cmd line editors
-RUN echo "Acquire::Check-Valid-Until \"false\";\nAcquire::Check-Date \"false\";" | cat > /etc/apt/apt.conf.d/10no--check-valid-until \
-    && apt-get update -y \
-    && apt-get install -y ${BUILD_PACKAGES} python3 python3-pip curl \
-    && curl https://confluence.ecmwf.int/download/attachments/45757960/eccodes-${ECCODES_VER}-Source.tar.gz --output eccodes-${ECCODES_VER}-Source.tar.gz \
-    && tar xzf eccodes-${ECCODES_VER}-Source.tar.gz \
-    && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=${ECCODES_DIR} -DENABLE_AEC=OFF ../eccodes-${ECCODES_VER}-Source && make && ctest && make install \
-    && cd / && rm -rf /tmp/eccodes \
-    && apt-get install -y vim emacs nano \
-    && apt-get remove --purge -y ${BUILD_PACKAGES} \
-    && apt autoremove -y  \
-    && apt-get -q clean \
-    && rm -rf /var/lib/apt/lists/*
+# Add virtual environment to PATH
+ENV PATH="/venv/bin:$PATH" \
+    ECCODES_DEFINITION_PATH="/venv/share/eccodes/definitions"
 
-WORKDIR /root
-# Clean up
-RUN rm -rf /tmp/eccodes
+# Upgrade pip and install eccodes without cache
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir eccodes==${ECCODES_VER} && \
+    python3 -m eccodes selfcheck
+
+# Create symbolic links for eccodes binaries
+RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
+
+# get definitions and move to correct location, then clean up
+RUN cd /tmp && curl -L -o eccodes.tar.gz https://github.com/ecmwf/eccodes/archive/refs/tags/${ECCODES_VER}.tar.gz && \
+    tar -xzf eccodes.tar.gz && \
+    mkdir -p /venv/share/eccodes && \
+    mv eccodes-${ECCODES_VER}/definitions /venv/share/eccodes/ && \
+    rm -rf /tmp/eccodes*
+
+CMD ["/bin/bash"]
