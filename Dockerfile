@@ -23,11 +23,6 @@ FROM ubuntu:noble
 
 ARG ECCODES_VER=2.44.0
 
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
     apt-get upgrade -y && \
