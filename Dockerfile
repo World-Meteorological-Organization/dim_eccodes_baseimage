@@ -19,6 +19,7 @@
 #
 ###############################################################################
 
+# 2026-01-12: add comment to force GHA to run
 FROM ubuntu:jammy
 
 ARG BUILD_PACKAGES="build-essential cmake gfortran python3-dev linux-libc-dev" \
