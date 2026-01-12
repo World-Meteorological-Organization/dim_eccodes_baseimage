@@ -16,6 +16,7 @@ on:
 
 env:
   DOCKER_ORG: wmoim
+  VERSION_TAG: noble_eccodes-2.44
 
 jobs:
   # Push image to GitHub Packages.
@@ -63,6 +64,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ env.VERSION_TAG }},enable={{is_default_branch}}
             type=pep440,pattern={{version}}
 
       - name: Build and push
