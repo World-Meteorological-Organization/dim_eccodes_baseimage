@@ -44,6 +44,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir eccodes==${ECCODES_VER} && \
     python3 -m eccodes selfcheck
 
+# Register eccodes and eckit libraries with the dynamic linker
+RUN echo "/venv/lib/python3.12/site-packages/eccodeslib/lib64" > /etc/ld.so.conf.d/eccodeslib.conf && \
+    echo "/venv/lib/python3.12/site-packages/eckitlib/lib64" >> /etc/ld.so.conf.d/eccodeslib.conf && \
+    ldconfig
+
 # Create symbolic links for eccodes binaries
 RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
 

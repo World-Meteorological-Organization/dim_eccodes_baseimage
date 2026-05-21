@@ -16,7 +16,7 @@ on:
 
 env:
   DOCKER_ORG: wmoim
-  VERSION_TAG: noble_eccodes-2.44
+  VERSION_TAG: noble_eccodes-2.47
 
 jobs:
   # Push image to GitHub Packages.
