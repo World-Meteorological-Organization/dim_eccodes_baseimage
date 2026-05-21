@@ -21,7 +21,7 @@
 
 FROM ubuntu:noble
 
-ARG ECCODES_VER=2.44.0
+ARG ECCODES_VER=2.47.0
 
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
@@ -43,6 +43,11 @@ ENV PATH="/venv/bin:$PATH" \
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir eccodes==${ECCODES_VER} && \
     python3 -m eccodes selfcheck
+
+# Register eccodes and eckit libraries with the dynamic linker
+RUN echo "/venv/lib/python3.12/site-packages/eccodeslib/lib64" > /etc/ld.so.conf.d/eccodeslib.conf && \
+    echo "/venv/lib/python3.12/site-packages/eckitlib/lib64" >> /etc/ld.so.conf.d/eccodeslib.conf && \
+    ldconfig
 
 # Create symbolic links for eccodes binaries
 RUN ln -s /venv/lib/python3.12/site-packages/eccodeslib/bin/* /venv/bin/
