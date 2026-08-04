@@ -21,7 +21,7 @@
 
 FROM ubuntu:noble
 
-ARG ECCODES_VER=2.47.0
+ARG ECCODES_VER=2.48.0
 
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
