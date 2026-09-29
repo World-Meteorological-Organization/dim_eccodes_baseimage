@@ -21,6 +21,7 @@
 
 FROM ubuntu:noble
 
+# eccodes version to be used
 ARG ECCODES_VER=2.48.0
 
 # Install dependencies and editors, apply security updates, then clean apt cache
