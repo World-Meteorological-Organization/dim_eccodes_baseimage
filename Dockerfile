@@ -32,6 +32,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
+RUN python3 -m pip install --break-system-packages --no-cache-dir --upgrade \
+    msgpack setuptools urllib3
+
 # Create a Python virtual environment with access to system site packages
 RUN python3 -m venv /venv --system-site-packages
 
