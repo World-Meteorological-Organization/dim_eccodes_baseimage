@@ -27,13 +27,11 @@ ARG ECCODES_VER=2.48.0
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
     apt-get upgrade -y --fix-missing && \
-    apt-get install -y --no-install-recommends python3 python3-pip python3-venv curl vim nano && \
-    apt-get install -y --only-upgrade python3-msgpack python3-setuptools python3-urllib3 && \
+    apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-venv \
+        curl vim nano && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
-
-RUN python3 -m pip install --break-system-packages --no-cache-dir --upgrade \
-    msgpack setuptools urllib3
 
 # Create a Python virtual environment with access to system site packages
 RUN python3 -m venv /venv --system-site-packages
