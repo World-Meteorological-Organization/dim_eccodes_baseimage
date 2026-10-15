@@ -41,8 +41,9 @@ jobs:
               try:
                   version = m.version(p)
                   spec = importlib.util.find_spec(p)
-                  print(f"{p}: {version}; path={spec.origin if spec else \"unknown\"}")
+                  path = spec.origin if spec else "unknown"
+                  print("{}: {}; path={}".format(p, version, path))
               except m.PackageNotFoundError:
-                  print(f"{p}: not installed")
+                  print("{}: not installed".format(p))
           '
           done
