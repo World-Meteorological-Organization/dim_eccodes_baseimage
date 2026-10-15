@@ -1,7 +1,6 @@
 name: Run Trivy vulnerability scanner
 
-
-on: [ push ]
+on: [push]
 
 jobs:
   main:
@@ -9,9 +8,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Build docker image for test
         run: |
           docker build -t dim_eccodes_baseimage:test .
+
       - name: Run Trivy vulnerability scanner on dim_eccodes_baseimage:test
         if: always()
         uses: aquasecurity/trivy-action@v0.36.0
@@ -25,3 +26,31 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+      - name: Diagnose Python packages on failure
+        if: failure()
+        run: |
+          echo "=== System Python packages ==="
+          docker run --rm --entrypoint /usr/bin/python3 \
+            dim_eccodes_baseimage:test -c \
+            "import importlib.metadata as m; \
+            for p in ['msgpack', 'setuptools', 'urllib3']: \
+                try: print(p, m.version(p)); \
+                except m.PackageNotFoundError: print(p, 'not installed')"
+
+          echo "=== Virtual environment packages ==="
+          docker run --rm --entrypoint /venv/bin/python \
+            dim_eccodes_baseimage:test -c \
+            "import importlib.metadata as m; \
+            for p in ['msgpack', 'setuptools', 'urllib3']: \
+                try: print(p, m.version(p)); \
+                except m.PackageNotFoundError: print(p, 'not installed')"
+
+          echo "=== Trivy detailed vulnerability report ==="
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --scanners vuln \
+            --format table \
+            --severity CRITICAL,HIGH \
+            dim_eccodes_baseimage:test || true
