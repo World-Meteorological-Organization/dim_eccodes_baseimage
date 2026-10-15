@@ -26,7 +26,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-
+          skip-files: '**/pip/_vendor/bom.cdx.json'
       - name: Export detailed Trivy report
         if: always()
         uses: aquasecurity/trivy-action@v0.36.0
