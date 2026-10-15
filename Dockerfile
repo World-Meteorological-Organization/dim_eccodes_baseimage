@@ -21,7 +21,8 @@
 
 FROM ubuntu:noble
 
-ARG ECCODES_VER=2.47.0
+# eccodes version to be used
+ARG ECCODES_VER=2.48.0
 
 # Install dependencies and editors, apply security updates, then clean apt cache
 RUN apt-get update && \
@@ -41,7 +42,8 @@ ENV PATH="/venv/bin:$PATH" \
 
 # Upgrade pip and install eccodes without cache
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir eccodes==${ECCODES_VER} && \
+    pip install --no-cache-dir "eccodes==${ECCODES_VER}" && \ 
+    pip install --no-cache-dir --upgrade "msgpack>=1.2.1" "setuptools>=78.1.1" "urllib3>=2.8.0" && \ 
     python3 -m eccodes selfcheck
 
 # Register eccodes and eckit libraries with the dynamic linker
