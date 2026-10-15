@@ -27,23 +27,24 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Diagnose Python packages on failure
-        if: failure()
-        run: |
-          for python in /usr/bin/python3 /venv/bin/python; do
-            echo "=== $python ==="
-            docker run --rm --entrypoint "$python" \
-              dim_eccodes_baseimage:test -c '
-          import importlib.metadata as m
-          import importlib.util
+      - name: Export detailed Trivy report
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
+        with:
+          image-ref: dim_eccodes_baseimage:test
+          format: json
+          output: trivy-report.json
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
-          for p in ("msgpack", "setuptools", "urllib3"):
-              try:
-                  version = m.version(p)
-                  spec = importlib.util.find_spec(p)
-                  path = spec.origin if spec else "unknown"
-                  print("{}: {}; path={}".format(p, version, path))
-              except m.PackageNotFoundError:
-                  print("{}: not installed".format(p))
-          '
-          done
+      - name: Upload Trivy report
+        if: always() && hashFiles('trivy-report.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.json
