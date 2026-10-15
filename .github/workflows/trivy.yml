@@ -30,27 +30,19 @@ jobs:
       - name: Diagnose Python packages on failure
         if: failure()
         run: |
-          echo "=== System Python packages ==="
-          docker run --rm --entrypoint /usr/bin/python3 \
-            dim_eccodes_baseimage:test -c \
-            "import importlib.metadata as m; \
-            for p in ['msgpack', 'setuptools', 'urllib3']: \
-                try: print(p, m.version(p)); \
-                except m.PackageNotFoundError: print(p, 'not installed')"
+          for python in /usr/bin/python3 /venv/bin/python; do
+            echo "=== $python ==="
+            docker run --rm --entrypoint "$python" \
+              dim_eccodes_baseimage:test -c '
+          import importlib.metadata as m
+          import importlib.util
 
-          echo "=== Virtual environment packages ==="
-          docker run --rm --entrypoint /venv/bin/python \
-            dim_eccodes_baseimage:test -c \
-            "import importlib.metadata as m; \
-            for p in ['msgpack', 'setuptools', 'urllib3']: \
-                try: print(p, m.version(p)); \
-                except m.PackageNotFoundError: print(p, 'not installed')"
-
-          echo "=== Trivy detailed vulnerability report ==="
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
-            --scanners vuln \
-            --format table \
-            --severity CRITICAL,HIGH \
-            dim_eccodes_baseimage:test || true
+          for p in ("msgpack", "setuptools", "urllib3"):
+              try:
+                  version = m.version(p)
+                  spec = importlib.util.find_spec(p)
+                  print(f"{p}: {version}; path={spec.origin if spec else \"unknown\"}")
+              except m.PackageNotFoundError:
+                  print(f"{p}: not installed")
+          '
+          done
