@@ -41,9 +41,9 @@ ENV PATH="/venv/bin:$PATH" \
     ECCODES_DEFINITION_PATH="/venv/share/eccodes/definitions"
 
 # Upgrade pip and install eccodes without cache
-RUN pip install --no-cache-dir --upgrade pip && 
-    pip install --no-cache-dir "eccodes==${ECCODES_VER}" && 
-    pip install --no-cache-dir --upgrade "msgpack>=1.2.1" "setuptools>=78.1.1" "urllib3>=2.8.0" && 
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "eccodes==${ECCODES_VER}" && \ 
+    pip install --no-cache-dir --upgrade "msgpack>=1.2.1" "setuptools>=78.1.1" "urllib3>=2.8.0" && \ 
     python3 -m eccodes selfcheck
 
 # Register eccodes and eckit libraries with the dynamic linker
